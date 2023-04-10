@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const md5 = require('md5');
+
 
 mongoose.connect('mongodb://127.0.0.1:27017/usersDB');
 
@@ -36,7 +38,7 @@ app.get('/register', (req, res) => {
 
 app.post('/register', async (req, res) => {
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+        const hashedPassword = await md5(req.body.password);
         const newUser = new User({
             email: req.body.username,
             password: hashedPassword
@@ -56,7 +58,8 @@ app.post('/login', async (req, res) => {
             res.render('home', { error: 'Invalid email or password.' });
             return;
         }
-        const isMatch = await bcrypt.compare(req.body.password, user.password);
+
+        const isMatch = await md5(req.body.password) === user.password;
         if (isMatch) {
             res.render('secrets');
         } else {
